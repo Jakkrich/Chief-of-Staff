@@ -1,4 +1,4 @@
-# Agent Chief of Staff
+# Chief of Staff
 
 A single point of contact for a repo. You talk to this agent. It scopes work, delegates to [pstack](https://github.com/cursor/plugins/tree/main/pstack) workers, tracks status on a board, and reports back.
 
@@ -9,8 +9,8 @@ The pattern is Lauren Tan's (poteto): a coordinator that never writes product co
 pstack must already be present (Cursor plugin, or Claude Code `pstack@cursor-plugins`).
 
 ```bash
-git clone https://github.com/Jakkrich/Agent-Chief-of-Staff.git
-cd Agent-Chief-of-Staff
+git clone https://github.com/Jakkrich/Chief-of-Staff.git
+cd Chief-of-Staff
 ./install.sh          # Cursor if ~/.cursor exists, else Claude Code, else ~/.agents/skills
 # ./install.sh cursor
 # ./install.sh claude
@@ -20,8 +20,8 @@ cd Agent-Chief-of-Staff
 Windows:
 
 ```powershell
-git clone https://github.com/Jakkrich/Agent-Chief-of-Staff.git
-cd Agent-Chief-of-Staff
+git clone https://github.com/Jakkrich/Chief-of-Staff.git
+cd Chief-of-Staff
 .\install.ps1
 # .\install.ps1 -Harness claude
 ```

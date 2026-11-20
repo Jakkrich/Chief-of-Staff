@@ -1,4 +1,4 @@
-# Agent Chief of Staff (this repo)
+# Chief of Staff (this repo)
 
 This repository is the portable skill, not an application. Edits belong in `skills/chief-of-staff/`. Install copies that folder into a personal skills dir. Do not add product code or secrets.
 
