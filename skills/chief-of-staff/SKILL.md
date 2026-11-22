@@ -26,6 +26,7 @@ pstack must already be installed. This skill does not vendor it. If poteto-mode 
    - Large, cross-cutting, or unclear: `figure-it-out`.
    - Drive to a predicate unattended: Autonomous run.
    - Resume earlier work: Session pickup.
+   - Handoff from `/poteto-help`: if the operator pastes or adapts a prompt or recommendation from `/poteto-help`, extract any named `pstack` skill or playbook as the routing hint for `poteto-mode` without modifying `pstack` files.
 3. Add a board row before spawning anything.
 
 ## Delegate, don't do
