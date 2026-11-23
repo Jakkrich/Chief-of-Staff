@@ -1,0 +1,60 @@
+name: Validate Chief of Staff
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate-unix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run repo validator
+        run: node scripts/validate.mjs
+      - name: Check install.sh syntax and isolated install
+        run: |
+          bash -n install.sh
+          TMP_HOME="$(mktemp -d)"
+          HOME="$TMP_HOME" bash ./install.sh --dry-run
+          HOME="$TMP_HOME" bash ./install.sh agents
+          test -f "$TMP_HOME/.agents/skills/chief-of-staff/SKILL.md"
+          rm -rf "$TMP_HOME"
+
+  validate-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run repo validator
+        run: node scripts/validate.mjs
+      - name: Test install.ps1 in isolated USERPROFILE
+        shell: powershell
+        run: |
+          $tmp = Join-Path $env:TEMP ("cos-ci-" + [guid]::NewGuid().ToString("N"))
+          New-Item -ItemType Directory -Force -Path $tmp | Out-Null
+          $origHome = $env:HOME
+          $origProfile = $env:USERPROFILE
+          try {
+            .\install.ps1 -Harness all -HomeDir $tmp -WhatIf
+            .\install.ps1 -Harness all -HomeDir $tmp
+            foreach ($rel in @(
+              ".cursor\skills\chief-of-staff\SKILL.md",
+              ".claude\skills\chief-of-staff\SKILL.md",
+              ".gemini\config\skills\chief-of-staff\SKILL.md",
+              ".agents\skills\chief-of-staff\SKILL.md"
+            )) {
+              if (-not (Test-Path (Join-Path $tmp $rel))) {
+                throw "Missing installed file in isolated HOME: $rel"
+              }
+            }
+          } finally {
+            $env:HOME = $origHome
+            $env:USERPROFILE = $origProfile
+            Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
+          }
