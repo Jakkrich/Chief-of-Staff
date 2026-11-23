@@ -40,7 +40,7 @@ If several match at one step, take the highest `version` in `plugin.json` or `.c
 | Tool | `Task` | `Agent` | The session's subagent tool |
 | Type | `subagent_type: "poteto-agent"` | `subagent_type: "pstack:poteto-agent"` | The pstack poteto-agent type if listed, else a general worker with the kickoff below |
 | Background | `run_in_background: true` | Omit (default background) | Background if the schema has it |
-| Model | Role line from `pstack-models.mdc` | Map the Cursor slug with `<pstack>/docs/harness/claude-code.md` (`opus`/`sonnet`/`haiku`/`fable` + `effort`). Non-Claude slugs: omit `model` | Pass only values the schema lists |
+| Model | Role line from `pstack-models.mdc` (`auto` / `inherit-parent`: omit `model` and spawn `generalPurpose`) | Map the Cursor slug with `<pstack>/docs/harness/claude-code.md` (`opus`/`sonnet`/`haiku`/`fable` + `effort`). `auto` / `inherit-parent` or non-Claude slugs: omit `model` (and for `auto` / `inherit-parent`, spawn `general-purpose`) | Pass only values the schema lists |
 | Cloud | `environment: "cloud"` | `isolation: "worktree"` | Isolated worktree. Skip dashboard/cloud-agent steps with one line |
 | Question tool | `AskQuestion` | `AskUserQuestion` | Ask in the reply |
 | Run another pstack skill | `Read <pstack>/skills/<name>/SKILL.md` and follow it | Same. The `Skill` tool refuses most pstack skills. Tell the operator `/pstack:<name>` | Same read-and-follow |
