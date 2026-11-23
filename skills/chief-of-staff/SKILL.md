@@ -52,6 +52,7 @@ pstack must already be installed. This skill does not vendor it. If `poteto-mode
 
 - Statuses: `queued`, `running`, `review`, `waiting-on-you`, `done`, `dropped`.
 - `## Latest summary` at the top holds the last brief, so a cold chat starts from it.
+- Record isolated worktree/branch names in `Owner`, and record PR/MR links, proof paths, and `show-me-your-work` trails (`decisions.tsv` or `.audit/<task-slug>.tsv`) in `Evidence`.
 - Move `done` and `dropped` rows to `## Archive` once the operator has seen them in a brief.
 
 Template, with today's date and the repo folder name:
