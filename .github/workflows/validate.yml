@@ -15,14 +15,22 @@ jobs:
           node-version: '20'
       - name: Run repo validator
         run: node scripts/validate.mjs
-      - name: Check install.sh syntax and isolated install
+      - name: Check install.sh syntax and isolated copy/link installs
         run: |
           bash -n install.sh
           TMP_HOME="$(mktemp -d)"
-          HOME="$TMP_HOME" bash ./install.sh --dry-run
-          HOME="$TMP_HOME" bash ./install.sh agents
-          test -f "$TMP_HOME/.agents/skills/chief-of-staff/SKILL.md"
-          rm -rf "$TMP_HOME"
+          TMP_LINK="$(mktemp -d)"
+          trap 'rm -rf "$TMP_HOME" "$TMP_LINK"' EXIT
+          HOME="$TMP_HOME" bash ./install.sh all --dry-run
+          HOME="$TMP_HOME" bash ./install.sh all
+          for rel in .cursor .claude .gemini/config .agents; do
+            test -f "$TMP_HOME/$rel/skills/chief-of-staff/SKILL.md"
+          done
+          HOME="$TMP_LINK" bash ./install.sh all --link
+          for rel in .cursor .claude .gemini/config .agents; do
+            test -L "$TMP_LINK/$rel/skills/chief-of-staff"
+            test -f "$TMP_LINK/$rel/skills/chief-of-staff/SKILL.md"
+          done
 
   validate-windows:
     runs-on: windows-latest
@@ -33,28 +41,30 @@ jobs:
           node-version: '20'
       - name: Run repo validator
         run: node scripts/validate.mjs
-      - name: Test install.ps1 in isolated USERPROFILE
+      - name: Test install.ps1 copy and link modes in isolated HomeDir
         shell: powershell
         run: |
-          $tmp = Join-Path $env:TEMP ("cos-ci-" + [guid]::NewGuid().ToString("N"))
-          New-Item -ItemType Directory -Force -Path $tmp | Out-Null
-          $origHome = $env:HOME
-          $origProfile = $env:USERPROFILE
+          $tmpCopy = Join-Path $env:TEMP ("cos-ci-copy-" + [guid]::NewGuid().ToString("N"))
+          $tmpLink = Join-Path $env:TEMP ("cos-ci-link-" + [guid]::NewGuid().ToString("N"))
+          New-Item -ItemType Directory -Force -Path $tmpCopy, $tmpLink | Out-Null
           try {
-            .\install.ps1 -Harness all -HomeDir $tmp -WhatIf
-            .\install.ps1 -Harness all -HomeDir $tmp
+            .\install.ps1 -Harness all -HomeDir $tmpCopy -WhatIf
+            .\install.ps1 -Harness all -HomeDir $tmpCopy
+            .\install.ps1 -Harness all -HomeDir $tmpLink -Link
             foreach ($rel in @(
-              ".cursor\skills\chief-of-staff\SKILL.md",
-              ".claude\skills\chief-of-staff\SKILL.md",
-              ".gemini\config\skills\chief-of-staff\SKILL.md",
-              ".agents\skills\chief-of-staff\SKILL.md"
+              ".cursor\skills\chief-of-staff",
+              ".claude\skills\chief-of-staff",
+              ".gemini\config\skills\chief-of-staff",
+              ".agents\skills\chief-of-staff"
             )) {
-              if (-not (Test-Path (Join-Path $tmp $rel))) {
-                throw "Missing installed file in isolated HOME: $rel"
+              if (-not (Test-Path (Join-Path $tmpCopy "$rel\SKILL.md"))) {
+                throw "Missing copied SKILL.md in isolated HomeDir: $rel"
+              }
+              $linkItem = Get-Item -LiteralPath (Join-Path $tmpLink $rel) -Force
+              if ($linkItem.LinkType -ne 'Junction' -or -not (Test-Path (Join-Path $tmpLink "$rel\SKILL.md"))) {
+                throw "Invalid junction in isolated HomeDir: $rel"
               }
             }
           } finally {
-            $env:HOME = $origHome
-            $env:USERPROFILE = $origProfile
-            Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
+            Remove-Item -Recurse -Force $tmpCopy, $tmpLink -ErrorAction SilentlyContinue
           }

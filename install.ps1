@@ -37,15 +37,17 @@ foreach ($t in $Targets) {
   $Dest = Get-TargetDest $t
   $Action = if ($Link) { "Link junction -> $Src" } else { "Copy from $Src" }
   if ($PSCmdlet.ShouldProcess($Dest, $Action)) {
-    New-Item -ItemType Directory -Force -Path (Split-Path $Dest) | Out-Null
-    if (Test-Path $Dest) {
-      $existing = Get-Item $Dest -Force
-      if ($existing.LinkType) {
-        $existing.Delete()
-      } else {
-        Remove-Item -Recurse -Force $Dest
+    if (Test-Path -LiteralPath (Split-Path $Dest)) {
+      $existing = Get-Item -LiteralPath $Dest -Force -ErrorAction SilentlyContinue
+      if ($existing) {
+        if ($existing.LinkType) {
+          $existing.Delete()
+        } else {
+          Remove-Item -Recurse -Force $Dest
+        }
       }
     }
+    New-Item -ItemType Directory -Force -Path (Split-Path $Dest) | Out-Null
     if ($Link) {
       New-Item -ItemType Junction -Path $Dest -Target $Src | Out-Null
       Write-Host "linked $Dest -> $Src"
